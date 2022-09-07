@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function LongPolling() {
+function EventSourcing() {
     const [messages, setMessages] = useState([]);
     const [value, setValue] = useState('');
 
@@ -46,4 +46,4 @@ function LongPolling() {
     );
 }
 
-export default LongPolling;
+export default EventSourcing;
