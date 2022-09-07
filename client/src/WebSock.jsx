@@ -10,10 +10,16 @@ function WebSock() {
 
 
     async function sendMessage() {
-        await axios.post('http://localhost:5000/new-messages', {
+        const message = {
+            username,
+            text: value,
             id: Date.now(),
-            messageText: value,
-        })
+            event: 'message',
+        }
+
+        socket.current.send(JSON.stringify(message));
+        
+        setValue('');
     }
 
     function connect() {
@@ -78,7 +84,7 @@ function WebSock() {
                                     Пользователь {message.username} подключился
                                 </div>
                                 : <div className='message'>
-                                    {message.username}: {message.messageText}
+                                    {message.username}: {message.text}
                                 </div>
                             }
                         </div>     
