@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import axios from 'axios';
 
 function WebSock() {
@@ -72,8 +72,15 @@ function WebSock() {
                 </div>
                 <div className="messages">
                     {messages.map(message => 
-                        <div className="message" key={message.id}>
-                            {message.messageText}
+                        <div key={message.id}>
+                            {message.event === 'connection'
+                                ? <div className='connection_message'>
+                                    Пользователь {message.username} подключился
+                                </div>
+                                : <div className='message'>
+                                    {message.username}: {message.messageText}
+                                </div>
+                            }
                         </div>     
                     )}
                 </div>
