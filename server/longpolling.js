@@ -8,20 +8,21 @@ const emitter = new event.EventEmitter();
 
 const app = express();
 
-app.use(cors())
+app.use(cors());
+app.use(express.json());
 
-app.get('/get-messages', ((req, res) => {
+app.get('/get-messages', (req, res) => {
     emitter.once('newMessage', (message) => {
         res.json(message);
     })
-}))
+})
 
 app.post('/new-messages', ((req, res) => {
     const message = req.body;
 
-    emitter.emit('newMessages', message);
+    emitter.emit('newMessage', message);
 
-    res.status(200)
+    res.status(200);
 }))
 
 app.listen(PORT, () => console.log(`server started on port ${PORT}`))
