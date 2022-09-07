@@ -10,10 +10,13 @@ function LongPolling() {
     }, [])
 
     async function subscribe() {
-       const eventSource = new EventSource('http://localhost:5000/connect');
+        const eventSource = new EventSource('http://localhost:5000/connect');
 
-       eventSource.onmessage = function (event) {
-           console.log(event.data);
+        eventSource.onmessage = function (event) {
+            const response = event.data;
+            const data = JSON.parse(response);
+
+            setMessages(prev => [data, ...prev]);
        }
     }
 
