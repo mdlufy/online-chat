@@ -1,22 +1,41 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
-function WebSock(props) {
+function WebSock() {
     const [messages, setMessages] = useState([]);
     const [value, setValue] = useState('');
     const socket = useRef();
     const [isConnected, setConnected] = useState(false);
     const [username, setUsername] = useState('');
 
-    useEffect(() => {
+
+    async function sendMessage() {
+        await axios.post('http://localhost:5000/new-messages', {
+            id: Date.now(),
+            messageText: value,
+        })
+    }
+
+    function connect() {
         socket.current = new WebSocket('ws://localhost:5000');
 
         socket.current.onopen = () => {
             setConnected(true);
+
+            const message = {
+                event: 'connection',
+                username,
+                id: Date.now(),
+            }
+
+            socket.current.send(JSON.stringify(message));
         }
 
-        socket.current.onmessage = () => {
+        socket.current.onmessage = (event) => {
+            const response = event.data;
+            const data = JSON.parse(response);
 
+            setMessages(prev => [data, ...prev]);
         }
 
         socket.current.onclose = () => {
@@ -26,13 +45,6 @@ function WebSock(props) {
         socket.current.onerror = () => {
             console.log('Socket произошла ошибка');
         }
-    }, [])
-
-    async function sendMessage() {
-        await axios.post('http://localhost:5000/new-messages', {
-            id: Date.now(),
-            messageText: value,
-        })
     }
 
     if (!isConnected) {
@@ -45,7 +57,7 @@ function WebSock(props) {
                         type='text' 
                         placeholder='Введите ваше имя'
                     />
-                    <button>Войти</button>
+                    <button onClick={connect}>Войти</button>
                 </div>
             </div>
         )
@@ -55,7 +67,7 @@ function WebSock(props) {
         <div className="center">
             <div>
                 <div className="form">
-                    <input value={value} onChange={e => setValue(e.target.value)} type="text" />
+                    <input value={value} onChange={e => setValue(e.target.value)} type="text" placeholder="Введите сообщение" />
                     <button onClick={sendMessage}>Отправить</button>
                 </div>
                 <div className="messages">
