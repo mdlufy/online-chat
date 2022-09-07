@@ -22,7 +22,7 @@ app.post('/new-messages', ((req, res) => {
 
     emitter.emit('newMessage', message);
 
-    res.status(200);
+    res.sendStatus(200);
 }))
 
 app.listen(PORT, () => console.log(`server started on port ${PORT}`))
