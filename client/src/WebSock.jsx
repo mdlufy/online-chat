@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import LoginForm from "./components/LoginForm/LoginForm";
 import MessageForm from "./components/MessageForm/MessageForm";
 import MessageList from "./components/MessageList/MessageList";
-import WritersList from "./components/WritersList/WritersList";
+import StatusList from "./components/StatusList/StatusList";
 
 function WebSock() {
     const [messages, setMessages] = useState([]);
@@ -11,6 +11,15 @@ function WebSock() {
     const [isConnected, setConnected] = useState(false);
     const [username, setUsername] = useState("");
     const socket = useRef();
+
+
+    function startWrite(e) {
+        setValue(e.target.value);
+
+        if (!currWriters.find(writer => writer.name === username)) {
+            sendStatus();
+        }
+    }
 
     async function sendMessage() {
         const message = {
@@ -35,13 +44,6 @@ function WebSock() {
         socket.current.send(JSON.stringify(status));
     }
 
-    function startWrite(e) {
-        setValue(e.target.value);
-
-        if (!currWriters.find(writer => writer.name === username)) {
-            sendStatus();
-        }
-    }
 
     function connect() {
         socket.current = new WebSocket("ws://localhost:5000");
@@ -52,7 +54,7 @@ function WebSock() {
             const message = {
                 event: "connection",
                 username,
-                id: Date.now(),
+                time: Date.now(),
             };
 
             socket.current.send(JSON.stringify(message));
@@ -80,7 +82,7 @@ function WebSock() {
                     setCurrWriters(() =>
                         currWriters.filter((writer) => writer.name !== user)
                     );
-                }, 2000);
+                }, 3000);
             }
 
             setMessages((prev) => [...prev, data]);
@@ -114,7 +116,7 @@ function WebSock() {
                     sendMessage={sendMessage}
                 />
                 <MessageList messages={messages} />
-                <WritersList writers={currWriters} />
+                <StatusList writers={currWriters} />
             </div>
         </div>
     );

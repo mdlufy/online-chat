@@ -5,7 +5,7 @@ import MessageItem from "../MessageItem/MessageItem";
 function MessageList({ messages }) {
     return (
         <div className="messages">
-            {messages.map((message) => (
+            {messages.map((message) => 
                 <div key={message.time}>
                     {message.event === "connection" && (
                         <Greeting message={message} />
@@ -14,7 +14,7 @@ function MessageList({ messages }) {
                         <MessageItem message={message} />
                     )}
                 </div>
-            ))}
+            )}
         </div>
     );
 }

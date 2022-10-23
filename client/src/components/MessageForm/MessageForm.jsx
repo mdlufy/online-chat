@@ -6,7 +6,6 @@ function MessageForm({value, startWrite, sendMessage}) {
             <input
                 value={value}
                 onChange={(e) => startWrite(e)}
-                on
                 type="text"
                 placeholder="Введите сообщение"
             />
