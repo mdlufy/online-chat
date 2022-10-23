@@ -1,12 +1,16 @@
 import React, { useRef, useState } from "react";
+import LoginForm from "./components/LoginForm/LoginForm";
+import MessageForm from "./components/MessageForm/MessageForm";
+import MessageList from "./components/MessageList/MessageList";
+import WritersList from "./components/WritersList/WritersList";
 
 function WebSock() {
     const [messages, setMessages] = useState([]);
     const [value, setValue] = useState("");
-    const socket = useRef();
     const [currWriters, setCurrWriters] = useState([]);
     const [isConnected, setConnected] = useState(false);
     const [username, setUsername] = useState("");
+    const socket = useRef();
 
     async function sendMessage() {
         const message = {
@@ -34,7 +38,7 @@ function WebSock() {
     function startWrite(e) {
         setValue(e.target.value);
 
-        if (currWriters.includes(username)) {
+        if (currWriters.find((writer) => (writer.name = username))) {
             e.stopPropagation();
         } else {
             sendStatus();
@@ -61,14 +65,22 @@ function WebSock() {
             const data = JSON.parse(response);
 
             if (data.event === "changeStatus") {
-                if (!currWriters.includes(data.username)) {
-                    setCurrWriters((writers) => [...writers, data.username]);
+                const { user, id, event } = data;
+                console.log(data);
+
+                if (!currWriters.find((writer) => (writer.name = user))) {
+                    setCurrWriters((writers) => [
+                        ...writers,
+                        { name: user, id: id },
+                    ]);
                 }
 
                 setTimeout(() => {
-                    setCurrWriters((writers) =>
-                        writers.filter((name) => name !== data.username)
+                    const newWriters = currWriters.filter(
+                        (writer) => writer.name !== user
                     );
+
+                    setCurrWriters(newWriters);
                 }, 2000);
             }
 
@@ -86,56 +98,24 @@ function WebSock() {
 
     if (!isConnected) {
         return (
-            <div className="center">
-                <div className="form">
-                    <input
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        type="text"
-                        placeholder="Введите ваше имя"
-                    />
-                    <button onClick={connect}>Войти</button>
-                </div>
-            </div>
+            <LoginForm
+                username={username}
+                setUsername={setUsername}
+                connect={connect}
+            />
         );
     }
 
     return (
         <div className="center">
             <div>
-                <div className="form">
-                    <input
-                        value={value}
-                        onChange={(e) => startWrite(e)}
-                        on
-                        type="text"
-                        placeholder="Введите сообщение"
-                    />
-                    <button onClick={sendMessage}>Отправить</button>
-                </div>
-                <div className="messages">
-                    {messages.map((message) => (
-                        <div key={message.id}>
-                            {message.event === "connection" && (
-                                <div className="connection_message">
-                                    Пользователь {message.username} подключился
-                                </div>
-                            )}
-                            {message.event === "message" && (
-                                <div className="message">
-                                    {message.username}: {message.text}
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-                <div>
-                    {currWriters.map((writer) => (
-                        <div key={writer.id}>
-                            <div>{writer} печатает...</div>
-                        </div>
-                    ))}
-                </div>
+                <MessageForm
+                    value={value}
+                    startWrite={startWrite}
+                    sendMessage={sendMessage}
+                />
+                <MessageList messages={messages} />
+                <WritersList writers={currWriters} />
             </div>
         </div>
     );
