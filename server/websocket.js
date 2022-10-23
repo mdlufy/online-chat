@@ -18,6 +18,11 @@ wsServer.on('connection', function connection(ws) {
             case 'connection': 
                 broadcastMessage(message);
                 break;
+            case 'changeStatus':
+                broadcastMessage(message);
+                break;
+            default: 
+                ws.send((new Error("Bad query")).message)
         }
     })
 });

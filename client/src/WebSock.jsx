@@ -1,95 +1,122 @@
-import React, { useRef, useState } from 'react';
-import axios from 'axios';
+import React, { useRef, useState } from "react";
+import LoginForm from "./components/LoginForm/LoginForm";
+import MessageForm from "./components/MessageForm/MessageForm";
+import MessageList from "./components/MessageList/MessageList";
+import StatusList from "./components/StatusList/StatusList";
 
 function WebSock() {
     const [messages, setMessages] = useState([]);
-    const [value, setValue] = useState('');
-    const socket = useRef();
+    const [value, setValue] = useState("");
+    const [currWriters, setCurrWriters] = useState([]);
     const [isConnected, setConnected] = useState(false);
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState("");
+    const socket = useRef();
 
+
+    function startWrite(e) {
+        setValue(e.target.value);
+
+        if (!currWriters.find(writer => writer.name === username)) {
+            sendStatus();
+        }
+    }
 
     async function sendMessage() {
         const message = {
             username,
             text: value,
-            id: Date.now(),
-            event: 'message',
-        }
+            time: Date.now(),
+            event: "message",
+        };
 
         socket.current.send(JSON.stringify(message));
-        
-        setValue('');
+
+        setValue("");
     }
 
+    async function sendStatus() {
+        const status = {
+            username,
+            time: Date.now(),
+            event: "changeStatus",
+        };
+
+        socket.current.send(JSON.stringify(status));
+    }
+
+
     function connect() {
-        socket.current = new WebSocket('ws://localhost:5000');
+        socket.current = new WebSocket("ws://localhost:5000");
 
         socket.current.onopen = () => {
             setConnected(true);
 
             const message = {
-                event: 'connection',
+                event: "connection",
                 username,
-                id: Date.now(),
-            }
+                time: Date.now(),
+            };
 
             socket.current.send(JSON.stringify(message));
-        }
+        };
 
         socket.current.onmessage = (event) => {
             const response = event.data;
             const data = JSON.parse(response);
 
-            setMessages(prev => [data, ...prev]);
-        }
+            if (data.event === "changeStatus") {
+                const { username: user, time } = data;
+
+                if (!currWriters.find((writer) => writer.name === user)) {
+                    const newWriter = {
+                        name: user,
+                        time: time,
+                    };
+
+                    setCurrWriters((writers) => [...writers, newWriter]);
+                } else {
+                    return;
+                }
+
+                setTimeout(() => {
+                    setCurrWriters(() =>
+                        currWriters.filter((writer) => writer.name !== user)
+                    );
+                }, 3000);
+            }
+
+            setMessages((prev) => [...prev, data]);
+        };
 
         socket.current.onclose = () => {
-            console.log('Socket закрыт');
-        }
+            console.log("Socket закрыт");
+        };
 
         socket.current.onerror = () => {
-            console.log('Socket произошла ошибка');
-        }
+            console.log("Socket произошла ошибка");
+        };
     }
 
     if (!isConnected) {
         return (
-            <div className='center'>
-                <div className='form'>
-                    <input 
-                        value={username} 
-                        onChange={e => setUsername(e.target.value)} 
-                        type='text' 
-                        placeholder='Введите ваше имя'
-                    />
-                    <button onClick={connect}>Войти</button>
-                </div>
-            </div>
-        )
+            <LoginForm
+                username={username}
+                setUsername={setUsername}
+                connect={connect}
+            />
+        );
     }
 
     return (
         <div className="center">
             <div>
-                <div className="form">
-                    <input value={value} onChange={e => setValue(e.target.value)} type="text" placeholder="Введите сообщение" />
-                    <button onClick={sendMessage}>Отправить</button>
-                </div>
-                <div className="messages">
-                    {messages.map(message => 
-                        <div key={message.id}>
-                            {message.event === 'connection'
-                                ? <div className='connection_message'>
-                                    Пользователь {message.username} подключился
-                                </div>
-                                : <div className='message'>
-                                    {message.username}: {message.text}
-                                </div>
-                            }
-                        </div>     
-                    )}
-                </div>
+                <MessageForm
+                    value={value}
+                    startWrite={startWrite}
+                    sendMessage={sendMessage}
+                />
+                <MessageList messages={messages} />
+                <StatusList writers={currWriters} />
             </div>
         </div>
     );
