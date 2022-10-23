@@ -1,17 +1,17 @@
 import React from "react";
 import Greeting from "../Greeting/Greeting";
-import Message from "../Message/Message";
+import MessageItem from "../MessageItem/MessageItem";
 
 function MessageList({ messages }) {
     return (
         <div className="messages">
             {messages.map((message) => (
-                <div key={message.id}>
+                <div key={message.time}>
                     {message.event === "connection" && (
                         <Greeting message={message} />
                     )}
                     {message.event === "message" && (
-                        <Message message={message} />
+                        <MessageItem message={message} />
                     )}
                 </div>
             ))}

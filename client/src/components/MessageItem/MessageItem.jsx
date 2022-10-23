@@ -1,7 +1,7 @@
 import React from "react";
 
-function Message({ message }) {
-    const timestamp = message.id;
+function MessageItem({ message }) {
+    const timestamp = message.time;
 
     const date = new Date(timestamp);
     const time = date.getHours() + ":" + date.getMinutes();
@@ -15,4 +15,4 @@ function Message({ message }) {
     );
 }
 
-export default Message;
+export default MessageItem;

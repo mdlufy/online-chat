@@ -16,7 +16,7 @@ function WebSock() {
         const message = {
             username,
             text: value,
-            id: Date.now(),
+            time: Date.now(),
             event: "message",
         };
 
@@ -28,7 +28,7 @@ function WebSock() {
     async function sendStatus() {
         const status = {
             username,
-            id: Date.now(),
+            time: Date.now(),
             event: "changeStatus",
         };
 
@@ -38,9 +38,7 @@ function WebSock() {
     function startWrite(e) {
         setValue(e.target.value);
 
-        if (currWriters.find((writer) => (writer.name = username))) {
-            e.stopPropagation();
-        } else {
+        if (!currWriters.find(writer => writer.name === username)) {
             sendStatus();
         }
     }
@@ -65,22 +63,23 @@ function WebSock() {
             const data = JSON.parse(response);
 
             if (data.event === "changeStatus") {
-                const { user, id, event } = data;
-                console.log(data);
+                const { username: user, time } = data;
 
-                if (!currWriters.find((writer) => (writer.name = user))) {
-                    setCurrWriters((writers) => [
-                        ...writers,
-                        { name: user, id: id },
-                    ]);
+                if (!currWriters.find((writer) => writer.name === user)) {
+                    const newWriter = {
+                        name: user,
+                        time: time,
+                    };
+
+                    setCurrWriters((writers) => [...writers, newWriter]);
+                } else {
+                    return;
                 }
 
                 setTimeout(() => {
-                    const newWriters = currWriters.filter(
-                        (writer) => writer.name !== user
+                    setCurrWriters(() =>
+                        currWriters.filter((writer) => writer.name !== user)
                     );
-
-                    setCurrWriters(newWriters);
                 }, 2000);
             }
 
