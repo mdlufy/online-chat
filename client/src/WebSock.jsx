@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
-import LoginForm from "./components/LoginForm/LoginForm";
-import MessageForm from "./components/MessageForm/MessageForm";
-import MessageList from "./components/MessageList/MessageList";
-import StatusList from "./components/StatusList/StatusList";
+import LoginForm from "./components/auth/LoginForm/LoginForm";
+import LogoutForm from "./components/auth/LogoutForm/LogoutForm";
+import MessageForm from "./components/textMessage/MessageForm/MessageForm";
+import MessageList from "./components/textMessage/MessageList/MessageList";
+import StatusList from "./components/status/StatusList/StatusList";
 
 function WebSock() {
     const [messages, setMessages] = useState([]);
@@ -12,21 +13,21 @@ function WebSock() {
     const [username, setUsername] = useState("");
     const socket = useRef();
 
-
     function startWrite(e) {
         setValue(e.target.value);
 
-        if (!currWriters.find(writer => writer.name === username)) {
+        if (!currWriters.find((writer) => writer.name === username)) {
+            console.log("yes");
             sendStatus();
         }
     }
 
     async function sendMessage() {
         const message = {
-            username,
-            text: value,
-            time: Date.now(),
             event: "message",
+            username,
+            time: Date.now(),
+            text: value,
         };
 
         socket.current.send(JSON.stringify(message));
@@ -36,14 +37,13 @@ function WebSock() {
 
     async function sendStatus() {
         const status = {
+            event: "changeStatus",
             username,
             time: Date.now(),
-            event: "changeStatus",
         };
 
         socket.current.send(JSON.stringify(status));
     }
-
 
     function connect() {
         socket.current = new WebSocket("ws://localhost:5000");
@@ -61,8 +61,7 @@ function WebSock() {
         };
 
         socket.current.onmessage = (event) => {
-            const response = event.data;
-            const data = JSON.parse(response);
+            const data = JSON.parse(event.data);
 
             if (data.event === "changeStatus") {
                 const { username: user, time } = data;
@@ -89,12 +88,26 @@ function WebSock() {
         };
 
         socket.current.onclose = () => {
+            setConnected(false);
+
             console.log("Socket закрыт");
         };
 
         socket.current.onerror = () => {
             console.log("Socket произошла ошибка");
         };
+    }
+
+    function disconnect() {
+        const message = {
+            event: "disconnect",
+            username,
+            time: Date.now(),
+        };
+
+        socket.current.send(JSON.stringify(message));
+
+        socket.current.close();
     }
 
     if (!isConnected) {
@@ -110,6 +123,7 @@ function WebSock() {
     return (
         <div className="center">
             <div>
+                <LogoutForm disconnect={disconnect} />
                 <MessageForm
                     value={value}
                     startWrite={startWrite}

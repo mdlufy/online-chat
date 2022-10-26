@@ -10,7 +10,7 @@ function LoginForm({username, setUsername, connect}) {
                     type="text"
                     placeholder="Введите ваше имя"
                 />
-                <button onClick={connect}>Войти</button>
+                <button onClick={connect}>Подключиться</button>
             </div>
         </div>
     );

@@ -1,5 +1,6 @@
 import React from "react";
-import Greeting from "../Greeting/Greeting";
+import Goodby from "../../connectionMessage/Goodby/Goodby";
+import Greeting from "../../connectionMessage/Greeting/Greeting";
 import MessageItem from "../MessageItem/MessageItem";
 
 function MessageList({ messages }) {
@@ -12,6 +13,9 @@ function MessageList({ messages }) {
                     )}
                     {message.event === "message" && (
                         <MessageItem message={message} />
+                    )}
+                    {message.event === "disconnect" && (
+                        <Goodby message={message} />
                     )}
                 </div>
             )}
