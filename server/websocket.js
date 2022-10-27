@@ -1,4 +1,3 @@
-const e = require("cors");
 const ws = require("ws");
 const Queue = require("./utils/Queue");
 
