@@ -1,7 +1,6 @@
 import React from "react";
 
 function MessageItem({ message }) {
-    console.log(message);
     const {serverTime: timestamp} = message;
 
     const date = new Date(timestamp);

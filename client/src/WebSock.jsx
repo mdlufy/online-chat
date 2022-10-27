@@ -3,36 +3,46 @@ import LoginForm from "./components/auth/LoginForm/LoginForm";
 import LogoutForm from "./components/auth/LogoutForm/LogoutForm";
 import MessageForm from "./components/textMessage/MessageForm/MessageForm";
 import MessageList from "./components/textMessage/MessageList/MessageList";
-import StatusList from "./components/status/StatusList/StatusList";
+import StatusItem from "./components/StatusItem/StatusItem";
 
 function WebSock() {
     const [messages, setMessages] = useState([]);
     const [value, setValue] = useState("");
-    const [currWriters, setCurrWriters] = useState([]);
+    const [writer, setWriter] = useState({});
     const [isConnected, setConnected] = useState(false);
+    const [isWriting, setIsWriting] = useState(false);
     const [username, setUsername] = useState("");
     const socket = useRef();
 
-    function normalize(data) {
-        data = JSON.parse(data);
-
-        return data;
-    }
+    let timeoutId = null;
 
     function setSortMessages(data) {
-        setMessages((prev) => [...prev, data].sort((a, b) => a.serverTime - b.serverTime));
+        setMessages((prev) =>
+            [...prev, data].sort((a, b) => a.serverTime - b.serverTime)
+        );
     }
 
     function startWrite(e) {
         setValue(e.target.value);
 
-        if (!currWriters.find((writer) => writer.name === username)) {
-            console.log("yes");
-            sendStatus();
-        }
+        sendStatus();
     }
 
-    async function sendMessage() {
+    function changeStatus(data) {
+        const { username: user, serverTime } = data;
+
+        clearTimeout(timeoutId);
+
+        setIsWriting(true);
+
+        setWriter(() => ({ name: user, serverTime }));
+
+        timeoutId = setTimeout(() => {
+            setIsWriting(false);
+        }, 1000);
+    }
+
+    function sendMessage() {
         const message = {
             event: "message",
             username,
@@ -45,7 +55,7 @@ function WebSock() {
         setValue("");
     }
 
-    async function sendStatus() {
+    function sendStatus() {
         const status = {
             event: "changeStatus",
             username,
@@ -71,30 +81,11 @@ function WebSock() {
         };
 
         socket.current.onmessage = (event) => {
-            const data = normalize(event.data);
+            const data = JSON.parse(event.data);
 
-            if (data.event === "changeStatus") {
-                const { username: user, serverTime: time } = data;
-
-                if (!currWriters.find((writer) => writer.name === user)) {
-                    const newWriter = {
-                        name: user,
-                        clientTime: time,
-                    };
-
-                    setCurrWriters((writers) => [...writers, newWriter]);
-                } else {
-                    return;
-                }
-
-                setTimeout(() => {
-                    setCurrWriters(() =>
-                        currWriters.filter((writer) => writer.name !== user)
-                    );
-                }, 3000);
-            }
-
-            setSortMessages(data);
+            data.event === "changeStatus"
+                ? changeStatus(data)
+                : setSortMessages(data);
         };
 
         socket.current.onclose = () => {
@@ -140,7 +131,7 @@ function WebSock() {
                     sendMessage={sendMessage}
                 />
                 <MessageList messages={messages} />
-                <StatusList writers={currWriters} />
+                <StatusItem isWriting={isWriting} writer={writer} />
             </div>
         </div>
     );
