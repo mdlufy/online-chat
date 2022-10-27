@@ -1,4 +1,6 @@
+const e = require("cors");
 const ws = require("ws");
+const Queue = require("./utils/Queue");
 
 const wsServer = new ws.WebSocketServer(
     {
@@ -7,8 +9,8 @@ const wsServer = new ws.WebSocketServer(
     () => console.log(`Server started on port 5000`)
 );
 
-const cache = [];
-let clientDisconnectTime = null;
+const queue = new Queue();
+let writeToQueue = false;
 
 wsServer.on("connection", (ws, req) => {
     const ip = req.socket.remoteAddress;
@@ -17,24 +19,31 @@ wsServer.on("connection", (ws, req) => {
     ws.on("message", (data) => {
         console.log(`received: ${data}`);
 
-        data = JSON.parse(data);
+        data = normalize(data);
+
+        wsServer.clients.size === 1 ? startWriteToQueue() : stopWriteToQueue();
 
         switch (data.event) {
             case "connection":
+                addMessageToQueue(data, queue);
+
                 broadcastMessage(data);
-                broadcastMissedMessages(cache, ws, clientDisconnectTime);
+                broadcastMissedMessages(queue, ws);
                 break;
             case "message":
-                broadcastMessage(data);
+                addMessageToQueue(data, queue);
 
-                cache.push(data);
+                broadcastMessage(data);
                 break;
             case "changeStatus":
                 broadcastStatus(data, ws);
                 break;
             case "disconnect":
+                startWriteToQueue();
+
+                addMessageToQueue(data, queue);
+
                 broadcastMessage(data);
-                clientDisconnectTime = getTime(data);
                 break;
             default:
                 broadcastError(ws);
@@ -62,33 +71,66 @@ function broadcastStatus(message, currWs) {
     });
 }
 
+function broadcastMissedMessages(queue, currWs) {
+    if (wsServer.clients.size === 1) return;
+
+    console.log("start sync");
+
+    wsServer.clients.forEach((client) => {
+        if (client === currWs && client.readyState === ws.OPEN) {
+            while (queue.size) {
+                const message = queue.dequeue();
+
+                client.send(JSON.stringify(message));
+
+                console.log(`message to sync: ${JSON.stringify(message)}`);
+            }
+
+            stopWriteToQueue();
+        }
+    });
+
+    console.log("end sync");
+}
+
 function broadcastError(currWs) {
     const error = new Error("Bad query");
 
     currWs.send(error.message);
 }
 
-function getTime(data) {
-    const { time: timestamp } = data;
-
-    return timestamp;
+function writeServerTime(data) {
+    return {
+        ...data,
+        serverTime: Date.now(),
+    };
 }
 
-function broadcastMissedMessages(cache, currWs, clientDisconnectTime) {
-    if (clientDisconnectTime === null) return;
+function sortByServerTime(data) {
+    return data.sort((a, b) => a.serverTime - b.serverTime);
+}
 
-    console.log("start sync");
-    wsServer.clients.forEach((client) => {
-        if (client === currWs && client.readyState === ws.OPEN) {
-            for (const message of cache) {
-                const time = message.time;
+function normalize(data) {
+    data = JSON.parse(data);
+    data = writeServerTime(data);
 
-                if (time > clientDisconnectTime) {
-                    client.send(JSON.stringify(message));
-                }
-            }
-        }
-    });
+    return data;
+}
 
-    console.log("end sync");
+function startWriteToQueue() {
+    writeToQueue = true;
+}
+
+function stopWriteToQueue() {
+    writeToQueue = false;
+}
+
+function addMessageToQueue(data, queue) {
+    if (!writeToQueue) return;
+
+    queue.enqueue(data);
+
+    sortByServerTime(queue.getQueue);
+
+    console.log(queue);
 }

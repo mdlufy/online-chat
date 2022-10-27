@@ -2,7 +2,7 @@ import React from "react";
 
 function StatusItem({ writer }) {
     return (
-        <div style={{'marginTop': '10px'}}>
+        <div className="writing_status">
             {writer.name} печатает...
         </div>
     );

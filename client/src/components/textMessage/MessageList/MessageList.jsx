@@ -7,7 +7,7 @@ function MessageList({ messages }) {
     return (
         <div className="messages">
             {messages.map((message) => 
-                <div key={message.time}>
+                <div key={message.serverTime}>
                     {message.event === "connection" && (
                         <Greeting message={message} />
                     )}

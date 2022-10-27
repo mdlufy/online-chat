@@ -13,6 +13,16 @@ function WebSock() {
     const [username, setUsername] = useState("");
     const socket = useRef();
 
+    function normalize(data) {
+        data = JSON.parse(data);
+
+        return data;
+    }
+
+    function setSortMessages(data) {
+        setMessages((prev) => [...prev, data].sort((a, b) => a.serverTime - b.serverTime));
+    }
+
     function startWrite(e) {
         setValue(e.target.value);
 
@@ -26,7 +36,7 @@ function WebSock() {
         const message = {
             event: "message",
             username,
-            time: Date.now(),
+            clientTime: Date.now(),
             text: value,
         };
 
@@ -39,7 +49,7 @@ function WebSock() {
         const status = {
             event: "changeStatus",
             username,
-            time: Date.now(),
+            clientTime: Date.now(),
         };
 
         socket.current.send(JSON.stringify(status));
@@ -54,22 +64,22 @@ function WebSock() {
             const message = {
                 event: "connection",
                 username,
-                time: Date.now(),
+                clientTime: Date.now(),
             };
 
             socket.current.send(JSON.stringify(message));
         };
 
         socket.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+            const data = normalize(event.data);
 
             if (data.event === "changeStatus") {
-                const { username: user, time } = data;
+                const { username: user, serverTime: time } = data;
 
                 if (!currWriters.find((writer) => writer.name === user)) {
                     const newWriter = {
                         name: user,
-                        time: time,
+                        clientTime: time,
                     };
 
                     setCurrWriters((writers) => [...writers, newWriter]);
@@ -84,7 +94,7 @@ function WebSock() {
                 }, 3000);
             }
 
-            setMessages((prev) => [...prev, data]);
+            setSortMessages(data);
         };
 
         socket.current.onclose = () => {
@@ -102,7 +112,7 @@ function WebSock() {
         const message = {
             event: "disconnect",
             username,
-            time: Date.now(),
+            clientTime: Date.now(),
         };
 
         socket.current.send(JSON.stringify(message));
