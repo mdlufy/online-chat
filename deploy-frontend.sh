@@ -19,6 +19,7 @@ mv /tmp/online-chat-build/* /tmp/online-chat
 git add .
 git commit -m deploy 
 git push
+
 cd /tmp
 rm -rf online-chat
 rm -rf online-chat-build
