@@ -1,11 +1,13 @@
 const ws = require("ws");
 const Queue = require("./utils/Queue");
 
+const PORT = process.env.PORT || 3000;
+
 const wsServer = new ws.WebSocketServer(
     {
-        port: 5000,
+        port: PORT,
     },
-    () => console.log(`Server started on port 5000`)
+    () => console.log(`Server started on port 3000`)
 );
 
 const queue = new Queue();

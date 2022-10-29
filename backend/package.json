@@ -1,16 +1,18 @@
 {
-  "name": "server",
+  "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
+  "engines": {
+    "node": "16.15.x"
+},
   "scripts": {
-    "start": "nodemon websocket.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "nodemon": "^2.0.19",
     "ws": "^8.8.1"
   }
 }

@@ -1,12 +1,12 @@
 ## Methods of Real-time client-server interaction
 
-### Server
+### Backend
 
 #### `npm start` - to start the server
 
 #
 
-### Client
+### Frontend
 
 #### `npm start` - to launch the client
 

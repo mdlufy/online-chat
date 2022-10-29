@@ -39,7 +39,7 @@ function WebSock() {
 
         timeoutId = setTimeout(() => {
             setIsWriting(false);
-        }, 1000);
+        }, 1500);
     }
 
     function sendMessage() {
@@ -66,7 +66,10 @@ function WebSock() {
     }
 
     function connect() {
-        socket.current = new WebSocket("ws://localhost:5000");
+        // const HOST = window.location.origin.replace(/^http/, 'ws')
+        // socket.current = new WebSocket(HOST);
+        // socket.current = new WebSocket("ws://192.168.1.115:5000");
+        socket.current = new WebSocket("wss://ws-online-chat.herokuapp.com");
 
         socket.current.onopen = () => {
             setConnected(true);
