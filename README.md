@@ -1,13 +1,25 @@
-## Methods of Real-time client-server interaction
+# Online chat
 
-### Backend
+Chat with realtime client-server interaction on websocket method
 
-#### `npm start` - to start the server
+## Features
 
-#
+- Identification by nickname at start
+- Messaging between two users
+- Displaying typing status of another user
+- Sync messages after disconnect
+- Minimalistic design
 
-### Frontend
+## To dev
 
-#### `npm start` - to launch the client
+Frontend:
 
+- `cd frontend`
+- `npm i`
+- `npm start`
 
+Backend:
+
+- `cd backend`
+- `npm i`
+- `npm start`
