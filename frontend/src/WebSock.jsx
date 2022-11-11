@@ -66,7 +66,7 @@ function WebSock() {
     }
 
     function connect() {
-        const HOST = window.location.origin.startsWith("https")
+        const HOST = window.location.protocol === "https:"
             ? "wss://ws-online-chat.herokuapp.com"
             : "ws://localhost:3000";
 
