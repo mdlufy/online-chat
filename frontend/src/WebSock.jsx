@@ -66,10 +66,11 @@ function WebSock() {
     }
 
     function connect() {
-        // const HOST = window.location.origin.replace(/^http/, 'ws')
-        // socket.current = new WebSocket(HOST);
-        // socket.current = new WebSocket("ws://192.168.1.115:5000");
-        socket.current = new WebSocket("wss://ws-online-chat.herokuapp.com");
+        const HOST = window.location.origin.startsWith("https")
+            ? "wss://ws-online-chat.herokuapp.com"
+            : "ws://localhost:3000";
+
+        socket.current = new WebSocket(HOST);
 
         socket.current.onopen = () => {
             setConnected(true);
