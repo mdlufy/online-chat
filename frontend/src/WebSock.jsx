@@ -63,6 +63,7 @@ function WebSock() {
             username,
             clientTime: Date.now(),
             text: value,
+            reaction: false,
         };
 
         socket.current.send(JSON.stringify(message));
