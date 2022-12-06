@@ -42,6 +42,21 @@ function WebSock() {
         }, 1500);
     }
 
+    function changeReaction({ clientTime }) {
+        setMessages((messages) => {
+            const message = messages.find(message => message.clientTime === clientTime);
+
+            message.reaction = !message.reaction;
+
+            const newMessagesArray = [...messages.filter(message => message.clientTime !== clientTime), message];
+
+            newMessagesArray.sort((a, b) => a.serverTime - b.serverTime);
+
+            return newMessagesArray;
+
+        })
+    }
+
     function sendMessage() {
         const message = {
             event: "message",
@@ -60,6 +75,15 @@ function WebSock() {
             event: "changeStatus",
             username,
             clientTime: Date.now(),
+        };
+
+        socket.current.send(JSON.stringify(status));
+    }
+
+    function sendReaction(clientTime) {
+        const status = {
+            event: "changeReaction",
+            clientTime: clientTime,
         };
 
         socket.current.send(JSON.stringify(status));
@@ -87,9 +111,16 @@ function WebSock() {
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
-            data.event === "changeStatus"
-                ? changeStatus(data)
-                : setSortMessages(data);
+            switch (data.event) {
+                case "changeStatus":
+                    changeStatus(data);
+                    break;
+                case "changeReaction":
+                    changeReaction(data);
+                    break;
+                default: 
+                    setSortMessages(data);
+            }
         };
 
         socket.current.onclose = () => {
@@ -134,7 +165,7 @@ function WebSock() {
                     startWrite={startWrite}
                     sendMessage={sendMessage}
                 />
-                <MessageList messages={messages} />
+                <MessageList messages={messages} sendReaction={sendReaction} />
                 <StatusItem isWriting={isWriting} writer={writer} />
             </div>
         </div>

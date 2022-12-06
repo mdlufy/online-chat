@@ -39,6 +39,9 @@ wsServer.on("connection", (ws, req) => {
             case "changeStatus":
                 broadcastStatus(data, ws);
                 break;
+            case "changeReaction":
+                broadcastReaction(data);
+                break;
             case "disconnect":
                 startWriteToQueue();
 
@@ -67,6 +70,14 @@ function broadcastMessage(message) {
 function broadcastStatus(message, currWs) {
     wsServer.clients.forEach((client) => {
         if (client !== currWs && client.readyState === ws.OPEN) {
+            client.send(JSON.stringify(message));
+        }
+    });
+}
+
+function broadcastReaction(message) {
+    wsServer.clients.forEach((client) => {
+        if (client.readyState === ws.OPEN) {
             client.send(JSON.stringify(message));
         }
     });
