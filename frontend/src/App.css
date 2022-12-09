@@ -58,8 +58,6 @@
 }
 
 .logout button {
-    display: block;
-    margin: 0px 0px 15px auto;
     border: #229ED9 1px solid;
     background: none;
     padding: 10px 15px;
@@ -70,4 +68,12 @@
 
 .writing_status {
     margin-top: 10px;
+}
+
+.profile {
+    display: flex;
+    justify-content: space-between;
+
+    align-items: center;
+    margin-bottom: 10px;
 }

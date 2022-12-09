@@ -3,7 +3,7 @@ import Goodby from "../../connectionMessage/Goodby/Goodby";
 import Greeting from "../../connectionMessage/Greeting/Greeting";
 import MessageItem from "../MessageItem/MessageItem";
 
-function MessageList({ messages, sendReaction }) {
+function MessageList({ messages, sendReaction, username }) {
     return (
         <div className="messages">
             {messages.map((message) => 
@@ -12,7 +12,7 @@ function MessageList({ messages, sendReaction }) {
                         <Greeting message={message} />
                     )}
                     {(message.event === "message" || message.event === 'changeReaction') && (
-                        <MessageItem message={message} sendReaction={sendReaction} />
+                        <MessageItem message={message} sendReaction={sendReaction} username={username} />
                     )}
                     {message.event === "disconnect" && (
                         <Goodby message={message} />

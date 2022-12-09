@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react";
 import LoginForm from "./components/auth/LoginForm/LoginForm";
-import LogoutForm from "./components/auth/LogoutForm/LogoutForm";
 import MessageForm from "./components/textMessage/MessageForm/MessageForm";
 import MessageList from "./components/textMessage/MessageList/MessageList";
 import StatusItem from "./components/StatusItem/StatusItem";
+import ProfileForm from "./components/auth/ProfileForm/ProfileForm";
 
 function WebSock() {
     const [messages, setMessages] = useState([]);
@@ -160,13 +160,13 @@ function WebSock() {
     return (
         <div className="center">
             <div>
-                <LogoutForm disconnect={disconnect} />
+                <ProfileForm username={username} disconnect={disconnect}/>
                 <MessageForm
                     value={value}
                     startWrite={startWrite}
                     sendMessage={sendMessage}
                 />
-                <MessageList messages={messages} sendReaction={sendReaction} />
+                <MessageList messages={messages} sendReaction={sendReaction} username={username} />
                 <StatusItem isWriting={isWriting} writer={writer} />
             </div>
         </div>
