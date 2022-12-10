@@ -48,11 +48,11 @@ function WebSock() {
                 (message) => message.clientTime === clientTime
             );
 
-            const isReacionAuthorInReactionsArray = message.reactions.find(
+            const isReactionAuthorInReactionsArray = message.reactions.find(
                 (reactionObj) => reactionObj.username === reactionAuthor
             );
 
-            const newReactions = isReacionAuthorInReactionsArray
+            const newReactions = isReactionAuthorInReactionsArray
                 ? [
                       ...message.reactions.map((reactionObj) => {
                           return reactionObj.username === reactionAuthor

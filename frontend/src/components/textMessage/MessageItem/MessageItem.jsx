@@ -1,17 +1,19 @@
 import React from "react";
 
 function MessageItem({ message, sendReaction, username }) {
-    const {
-        serverTime: timestamp,
-        clientTime,
-        username: messageAuthor,
-    } = message;
+    const { serverTime: timestamp, clientTime } = message;
 
-    console.log(message.reactions);
+    const date = new Date(timestamp);
+    const time = date.getHours() + ":" + date.getMinutes();
 
     const messageReactionsCount = message.reactions.reduce((prev, curr) => {
         return curr.reaction ? ++prev : prev;
     }, 0);
+
+    const isUserReacted = isCurrUserReacted();
+
+    const reactionClasses =
+        "reaction " + (isUserReacted ? "reaction-bgcolor" : "");
 
     function isCurrUserReacted() {
         const currUserReacitonObj = message.reactions.find(
@@ -23,23 +25,14 @@ function MessageItem({ message, sendReaction, username }) {
         return currUserReacitonObj.reaction;
     }
 
-    const isUserReacted = isCurrUserReacted();
-
-    const reactionClasses =
-        "reaction " + (isUserReacted ? "reaction-bgcolor" : "");
-
-    const date = new Date(timestamp);
-    const time = date.getHours() + ":" + date.getMinutes();
-
-    function handleClick() {
-        sendReaction(clientTime);
-    }
-
     return (
         <div className="message">
             <span>{message.username}: </span>
             <span>{message.text}</span>
-            <span className={reactionClasses} onClick={handleClick}>
+            <span
+                className={reactionClasses}
+                onClick={() => sendReaction(clientTime)}
+            >
                 {isUserReacted ? "❤️" : "♡"}{" "}
                 {messageReactionsCount !== 0 ? messageReactionsCount : ""}
             </span>
