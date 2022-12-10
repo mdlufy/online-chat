@@ -42,19 +42,45 @@ function WebSock() {
         }, 1500);
     }
 
-    function changeReaction({ clientTime }) {
+    function changeReaction({ clientTime, reactionAuthor }) {
         setMessages((messages) => {
-            const message = messages.find(message => message.clientTime === clientTime);
+            const message = messages.find(
+                (message) => message.clientTime === clientTime
+            );
 
-            message.reaction = !message.reaction;
+            const isReacionAuthorInReactionsArray = message.reactions.find(
+                (reactionObj) => reactionObj.username === reactionAuthor
+            );
 
-            const newMessagesArray = [...messages.filter(message => message.clientTime !== clientTime), message];
+            const newReactions = isReacionAuthorInReactionsArray
+                ? [
+                      ...message.reactions.map((reactionObj) => {
+                          return reactionObj.username === reactionAuthor
+                              ? {
+                                    ...reactionObj,
+                                    reaction: !reactionObj.reaction,
+                                }
+                              : reactionObj;
+                      }),
+                  ]
+                : [
+                      ...message.reactions,
+                      { username: reactionAuthor, reaction: true },
+                  ];
+
+            message.reactions = newReactions;
+
+            const newMessagesArray = [
+                ...messages.filter(
+                    (message) => message.clientTime !== clientTime
+                ),
+                message,
+            ];
 
             newMessagesArray.sort((a, b) => a.serverTime - b.serverTime);
 
             return newMessagesArray;
-
-        })
+        });
     }
 
     function sendMessage() {
@@ -63,7 +89,15 @@ function WebSock() {
             username,
             clientTime: Date.now(),
             text: value,
-            reaction: false,
+            reactions: [{ username: username, reaction: false }],
+
+            // reaction format
+            /*
+                {
+                    username: string;
+                    reaction: boolean;
+                },
+            */
         };
 
         socket.current.send(JSON.stringify(message));
@@ -85,15 +119,17 @@ function WebSock() {
         const status = {
             event: "changeReaction",
             clientTime: clientTime,
+            reactionAuthor: username,
         };
 
         socket.current.send(JSON.stringify(status));
     }
 
     function connect() {
-        const HOST = window.location.protocol === "https:"
-            ? "wss://ws-online-chat.herokuapp.com"
-            : "ws://localhost:3000";
+        const HOST =
+            window.location.protocol === "https:"
+                ? "wss://ws-online-chat.herokuapp.com"
+                : "ws://localhost:3000";
 
         socket.current = new WebSocket(HOST);
 
@@ -119,7 +155,7 @@ function WebSock() {
                 case "changeReaction":
                     changeReaction(data);
                     break;
-                default: 
+                default:
                     setSortMessages(data);
             }
         };
@@ -160,13 +196,17 @@ function WebSock() {
     return (
         <div className="center">
             <div>
-                <ProfileForm username={username} disconnect={disconnect}/>
+                <ProfileForm username={username} disconnect={disconnect} />
                 <MessageForm
                     value={value}
                     startWrite={startWrite}
                     sendMessage={sendMessage}
                 />
-                <MessageList messages={messages} sendReaction={sendReaction} username={username} />
+                <MessageList
+                    messages={messages}
+                    sendReaction={sendReaction}
+                    username={username}
+                />
                 <StatusItem isWriting={isWriting} writer={writer} />
             </div>
         </div>
