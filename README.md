@@ -9,6 +9,7 @@ Chat with realtime client-server interaction on websocket method
 - Displaying typing status of another user
 - Sync messages after disconnect
 - Minimalistic design
+- Leave reactions to messages
 
 ## To dev
 
